@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+message network_message {
+	optional telemetry_message telemetry = 1;
+}
+
+message telemetry_message {
+	optional int32 rpm = 1;
+}

@@ -1,0 +1,9 @@
+compiler.compileProtoFiles=true
+compiler.enableProjectSettings=true
+compiler.protocFilePath=C\:\\Program Files (x86)\\protoc.exe
+compiler.pythonCodeGenerationEnabled=true
+compiler.pythonOutputDirectory=protobuf
+compiler.useProtocInCustomPath=true
+compiler.useProtocInSystemPath=false
+eclipse.preferences.version=1
+general.enableProjectSettings=true

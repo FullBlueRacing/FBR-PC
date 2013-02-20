@@ -4,9 +4,12 @@ import wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
 from collections import deque
+import numpy as np
 
-class ControlWindow(wx.Frame):
+class TelemetryWindow(wx.Frame):
     def __init__(self, parent):
+        self.telemetry = None
+        self.accel = []
         self.line = None
         self.live_buffer = deque(maxlen=5000)
         
@@ -15,7 +18,40 @@ class ControlWindow(wx.Frame):
         panel = wx.Panel(self, -1)
         
         top_sizer = wx.BoxSizer(wx.VERTICAL)
-        data_sizer = wx.FlexGridSizer(1, 2, 3, 3)
+        
+        # Data Screen
+        data_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # Figures on LHS
+        numbers_sizer = wx.FlexGridSizer(0, 2, 3, 3)
+        numbers_sizer.AddGrowableCol(1)
+        
+        for i in range(0, 10):
+            label = wx.StaticText(panel, label="Control #{}".format(i))
+            gauge = wx.Gauge(panel, range=10)
+            gauge.SetValue(i)        
+            numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+            numbers_sizer.Add(gauge, flag=wx.EXPAND)
+        
+        data_sizer.Add(numbers_sizer, proportion=0.5, flag=wx.EXPAND, border=3)
+        
+        # Graphs on RHS
+        graph_sizer = wx.GridSizer(0, 1, 3, 3)
+        
+        self.revs_figure = Figure(None, None)
+        self.revs_canvas = FigureCanvasWxAgg(panel, -1, self.revs_figure)
+        
+        self.g_figure = Figure(None, None)
+        self.g_canvas = FigureCanvasWxAgg(panel, -1, self.g_figure)
+        
+        graph_sizer.Add(self.revs_canvas, flag=wx.EXPAND | wx.CENTER)#, flag=wx.EXPAND)
+        graph_sizer.Add(self.g_canvas, flag=wx.EXPAND | wx.CENTER)
+        
+        data_sizer.Add(graph_sizer, proportion=1, flag=wx.EXPAND, border=3)
+        
+        top_sizer.Add(data_sizer, proportion=1, flag=wx.EXPAND)
+
+        # Bottom Controls
         control_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         btnStart = wx.Button(panel, label="Start")
@@ -23,33 +59,37 @@ class ControlWindow(wx.Frame):
         
         control_sizer.Add(btnStart, flag=wx.ALL, border=3)
         control_sizer.Add(btnStop, flag=wx.ALL, border=3)
-        
-        lblRPM = wx.StaticText(panel, label="RPM")
-        
-        guaRPM = wx.Gauge(panel)
-        guaRPM.SetRange(13000)
-        guaRPM.SetValue(2000)
-        
-        data_sizer.AddGrowableCol(1)
-        
-        for i in range(0, 10):
-            label = wx.StaticText(panel, label="Control #{}".format(i))
-            gauge = wx.Gauge(panel, range=10)
-            gauge.SetValue(i)        
-            data_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
-            data_sizer.Add(gauge, flag=wx.EXPAND)
-        
-        data_sizer.Add(lblRPM, flag=wx.ALIGN_CENTER_VERTICAL)
-        data_sizer.Add(guaRPM)
-        
-        top_sizer.Add(data_sizer, flag=wx.ALL | wx.EXPAND, border=3)
         top_sizer.Add(control_sizer)
         
-        #self.canvas.Bind(wx.EVT_IDLE, self.update_data)
+        self.revs_canvas.Bind(wx.EVT_IDLE, self.update_revs)
+        self.g_canvas.Bind(wx.EVT_IDLE, self.update_g)
+        
         btnStart.Bind(wx.EVT_BUTTON, self.btnStart_Click)
         btnStop.Bind(wx.EVT_BUTTON, self.btnStop_Click)
     
         panel.SetSizer(top_sizer)
+    
+    def update_revs(self, event=None):
+        self.revs_figure.clear()
+        plot = self.revs_figure.add_subplot(111)
+        plot.plot(range(0, 100), range(0, 12000, 120))
+        self.revs_canvas.draw()
+    
+    def update_g(self, event=None):        
+        self.g_figure.clear()
+        ax = self.g_figure.add_axes([0.1, 0.1, 0.8, 0.8,], polar=True)
+        
+        r = [np.linalg.norm(x) for x in self.accel]
+        theta = [np.arctan2(x[1], x[0]) for x in self.accel]
+        
+        ax.plot(theta, r, color='#ee8d18', lw=3)
+        #ax.plot(np.linspace(-np.pi, np.pi), np.ones(50))
+        ax.set_rmax(1.5)
+        self.g_canvas.draw()
+    
+    def process_message(self, message):
+        self.telemetry = message.telemetry;
+        self.accel.append(np.array([self.telemetry.accel_x, self.telemetry.accel_y]))
     
     def update_data(self, event=None):
         self.show_samples(self.live_buffer, self.live_buffer.maxlen)
@@ -61,7 +101,7 @@ class ControlWindow(wx.Frame):
             plot.set_xlim(-width, 0)
             plot.set_ylim(0, 1024)
             plot.yaxis.tick_right()
-            plot.set_yticks(range(0,1025,256))
+            plot.set_yticks(range(0, 1025, 256))
             line, = plot.plot(range(-len(samples), 0), samples)
             
             if len(samples) == width:

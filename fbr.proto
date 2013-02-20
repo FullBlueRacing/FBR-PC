@@ -6,4 +6,16 @@ message network_message {
 
 message telemetry_message {
 	optional int32 rpm = 1;
+	optional float throttle_pos = 2;
+	optional int32 manifold_pres = 3;
+	optional int32 air_temp = 4;
+	optional float coolant_temp = 5;
+	optional int32 lambda = 6;
+	optional int32 speed = 7;
+	optional float accel_x = 8;
+	optional float accel_y = 9;
+	optional int32 gear = 10;
+	optional int32 oil_temp = 11;
+	optional int32 warnings = 12;
+	optional float voltage = 13;
 }

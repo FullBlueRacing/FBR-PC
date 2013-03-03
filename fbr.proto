@@ -7,8 +7,8 @@ message network_message {
 message telemetry_message {
 	optional int32 rpm = 1;
 	optional float throttle_pos = 2;
-	optional int32 manifold_pres = 3;
-	optional int32 air_temp = 4;
+	optional float manifold_pres = 3;
+	optional float air_temp = 4;
 	optional float coolant_temp = 5;
 	optional int32 lambda = 6;
 	optional int32 speed = 7;

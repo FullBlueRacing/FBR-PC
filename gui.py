@@ -9,9 +9,9 @@ import numpy as np
 class TelemetryWindow(wx.Frame):
     def __init__(self, parent):
         self.telemetry = None
-        self.accel = []
+        self.accel = deque(maxlen=100)
+        self.rpm = deque(maxlen=100)
         self.line = None
-        self.live_buffer = deque(maxlen=5000)
         
         wx.Frame.__init__(self, parent, title="FBR-PC Telemetry Viewer", size=(640, 480))
         
@@ -26,12 +26,15 @@ class TelemetryWindow(wx.Frame):
         numbers_sizer = wx.FlexGridSizer(0, 2, 3, 3)
         numbers_sizer.AddGrowableCol(1)
         
-        for i in range(0, 10):
-            label = wx.StaticText(panel, label="Control #{}".format(i))
-            gauge = wx.Gauge(panel, range=10)
-            gauge.SetValue(i)        
-            numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
-            numbers_sizer.Add(gauge, flag=wx.EXPAND)
+        label = wx.StaticText(panel, label="Battery Voltage");
+        self.voltage = wx.TextCtrl(panel, style=wx.TE_READONLY);
+        numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+        numbers_sizer.Add(self.voltage, flag=wx.EXPAND)
+        
+        label = wx.StaticText(panel, label="Coolant Temp");
+        self.coolant_temp = wx.TextCtrl(panel, style=wx.TE_READONLY);
+        numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+        numbers_sizer.Add(self.coolant_temp, flag=wx.EXPAND)
         
         data_sizer.Add(numbers_sizer, proportion=0.5, flag=wx.EXPAND, border=3)
         
@@ -72,7 +75,7 @@ class TelemetryWindow(wx.Frame):
     def update_revs(self, event=None):
         self.revs_figure.clear()
         plot = self.revs_figure.add_subplot(111)
-        plot.plot(range(0, 100), range(0, 12000, 120))
+        plot.plot(self.rpm)
         self.revs_canvas.draw()
     
     def update_g(self, event=None):        
@@ -84,12 +87,16 @@ class TelemetryWindow(wx.Frame):
         
         ax.plot(theta, r, color='#ee8d18', lw=3)
         #ax.plot(np.linspace(-np.pi, np.pi), np.ones(50))
-        ax.set_rmax(1.5)
+        ax.set_rmax(2.0)
         self.g_canvas.draw()
     
     def process_message(self, message):
-        self.telemetry = message.telemetry;
+        self.telemetry = message;
         self.accel.append(np.array([self.telemetry.accel_x, self.telemetry.accel_y]))
+        self.rpm.append(self.telemetry.rpm)
+        self.voltage.SetValue("{:3.1f}".format(self.telemetry.voltage))
+        self.coolant_temp.SetValue("{:3.1f}C".format(self.telemetry.coolant_temp))
+        #print message
     
     def update_data(self, event=None):
         self.show_samples(self.live_buffer, self.live_buffer.maxlen)

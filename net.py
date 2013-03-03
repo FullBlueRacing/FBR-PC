@@ -1,17 +1,21 @@
 from protobuf import fbr_pb2
+from twisted.protocols.basic import IntNStringReceiver
 from twisted.internet.error import ConnectionDone
 from twisted.internet.protocol import Factory
-from twisted.protocols.basic import Int32StringReceiver
+from struct import calcsize
 
-class ProtobufProtocol(Int32StringReceiver):
+class ProtobufProtocol(IntNStringReceiver):
+    structFormat = "<I"
+    prefixLength = calcsize(structFormat)
+    
     def sendMessage(self, message):
         #print("ProtobufProtocol: Sending")
         self.sendString(message.SerializeToString())
         #print("ProtobufProtocol: Sent")
   
     def stringReceived(self, data):
-        #print("ProtobufProtocol: Received")
-        message = fbr_pb2.network_message()
+        #print("ProtobufProtocol: Received {} bytes".format(len(data)))
+        message = fbr_pb2.telemetry_message()
         message.ParseFromString(data)
         self.messageReceived(message)
     

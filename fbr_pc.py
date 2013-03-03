@@ -16,12 +16,17 @@ class TelemetryProtocol(ProtobufProtocol):
         self.gui = gui
         
     def messageReceived(self, message):
-        telemetry = message.telemetry_message
+        #print("Message Received")
+        telemetry = message
         self.gui.process_message(telemetry)
 
 class TelemetryProtocolFactory(Factory):
     def __init__(self, gui):
         self.protocol = TelemetryProtocol(gui)
+    
+    def buildProtocol(self, addr):
+        print(addr)
+        return self.protocol
 
 app = wx.App(False)
 frame = TelemetryWindow(None)
@@ -31,12 +36,15 @@ reactor.registerWxApp(app)
 endpoint = clientFromString(reactor, sys.argv[1])
 endpoint.connect(TelemetryProtocolFactory(frame))
 
-for i in np.linspace(-np.pi, np.pi):
-    message = network_message()
-    
-    message.telemetry.accel_x = np.cos(i)
-    message.telemetry.accel_y = np.sin(i)
-    
-    frame.process_message(message)
+#endpoint = TCP4ServerEndpoint(reactor, 8282)
+#endpoint.listen(TelemetryProtocolFactory(frame))
+
+#for i in np.linspace(-np.pi, np.pi):
+#    message = network_message()
+#    
+#    message.telemetry.accel_x = np.cos(i)
+#    message.telemetry.accel_y = np.sin(i)
+#    
+#    frame.process_message(message)
 
 reactor.run()

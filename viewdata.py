@@ -4,7 +4,7 @@ import struct
 import pylab as plt
 import sys
 
-data = file(sys.argv[1], "r")
+data = file(sys.argv[1], "rb")
 
 log = []
 
@@ -16,7 +16,7 @@ while True:
     
     len_int, = struct.unpack("<I", len_str)
     message = data.read(len_int)
-    
+    #print("{} {}".format(len_int, len(message)))
     try:
         telemetry = telemetry_message()
         telemetry.ParseFromString(message)
@@ -25,7 +25,7 @@ while True:
         print(e)
         break
 
-volts = [x.voltage for x in log]    
+volts = [x.accel_x for x in log]    
 plt.plot(volts)
 plt.show()
 

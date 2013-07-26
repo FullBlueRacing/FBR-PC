@@ -33,8 +33,8 @@ frame = TelemetryWindow(None)
 frame.Show(True)
 reactor.registerWxApp(app)
 
-endpoint = clientFromString(reactor, sys.argv[1])
-endpoint.connect(TelemetryProtocolFactory(frame))
+#endpoint = clientFromString(reactor, sys.argv[1])           UNCOMMENT!!!
+#endpoint.connect(TelemetryProtocolFactory(frame))			 UNCOMMENT!!!		
 
 #endpoint = TCP4ServerEndpoint(reactor, 8282)
 #endpoint.listen(TelemetryProtocolFactory(frame))

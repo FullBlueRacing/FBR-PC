@@ -9,11 +9,13 @@ import numpy as np
 class TelemetryWindow(wx.Frame):
     def __init__(self, parent):
         self.telemetry = None
-        self.accel = deque(maxlen=100)
+        self.accel = deque(maxlen=3)
         self.rpm = deque(maxlen=100)
         self.line = None
         
-        wx.Frame.__init__(self, parent, title="FBR-PC Telemetry Viewer", size=(640, 480))
+        wx.Frame.__init__(self, parent, title="FBR-PC Telemetry Viewer", size=(640, 480),
+						style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.MINIMIZE_BOX 
+						| wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.MAXIMIZE )
         
         panel = wx.Panel(self, -1)
         
@@ -39,7 +41,7 @@ class TelemetryWindow(wx.Frame):
         data_sizer.Add(numbers_sizer, proportion=0.5, flag=wx.EXPAND, border=3)
         
         # Graphs on RHS
-        graph_sizer = wx.GridSizer(0, 1, 3, 3)
+        graph_sizer = wx.GridSizer(0, 1, 3, 3)   #graph_sizer = wx.GridSizer(0, 1, 3, 3)
         
         self.revs_figure = Figure(None, None)
         self.revs_canvas = FigureCanvasWxAgg(panel, -1, self.revs_figure)
@@ -85,9 +87,9 @@ class TelemetryWindow(wx.Frame):
         r = [np.linalg.norm(x) for x in self.accel]
         theta = [np.arctan2(x[1], x[0]) for x in self.accel]
         
-        ax.plot(theta, r, color='#ee8d18', lw=3)
+        ax.plot(theta, r, color='#cc0000', lw=10)          
         #ax.plot(np.linspace(-np.pi, np.pi), np.ones(50))
-        ax.set_rmax(2.0)
+        ax.set_rmax(3.0)
         self.g_canvas.draw()
     
     def process_message(self, message):

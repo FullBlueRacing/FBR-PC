@@ -192,9 +192,8 @@ plt.plot(voltage, 'k')
 
 # Set up graph to display data from lambda sensor
 plt.subplot(326)
-lambda_sensor = volts_xdn             #############################################  Put some data in order to display something, need to fix telemetry_message class definition in FBRLogger
-#lambda_sensor = [x.lambda for x in log]                  # PROBLEM WITH DEFINITION FOR LAMBDA SENSOR VARIABLE IN TELEMETRY OBJECT
-plt.axis([0.0,count,MIN_LAMBDA,MAX_LAMBDA]) ######################################
+lambda_sensor = [x.lambda_sensor for x in log]                  
+plt.axis([0.0,count,MIN_LAMBDA,MAX_LAMBDA]) 
 plt.xticks(labels_locs, labels_vals)
 plt.xlabel('Time (min)')
 plt.ylabel('Lambda Value')

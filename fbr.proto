@@ -10,7 +10,7 @@ message telemetry_message {
 	optional float manifold_pres = 3;
 	optional float air_temp = 4;
 	optional float coolant_temp = 5;
-	optional int32 lambda = 6;
+	optional int32 lambda_sensor = 6;
 	optional int32 speed = 7;
 	optional float accel_x = 8;
 	optional float accel_y = 9;

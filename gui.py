@@ -13,31 +13,46 @@ class TelemetryWindow(wx.Frame):
         self.rpm = deque(maxlen=100)
         self.line = None
         
-        wx.Frame.__init__(self, parent, title="FBR-PC Telemetry Viewer", size=(640, 480),
+	wx.Frame.__init__(self, parent, title="FBR-PC Telemetry Viewer", size=(640, 480),
 						style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.MINIMIZE_BOX 
 						| wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.MAXIMIZE )
         
-        panel = wx.Panel(self, -1)
+	panel = wx.Panel(self, -1)
         
-        top_sizer = wx.BoxSizer(wx.VERTICAL)
+	top_sizer = wx.BoxSizer(wx.VERTICAL)
         
         # Data Screen
-        data_sizer = wx.BoxSizer(wx.HORIZONTAL)
+	data_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         # Figures on LHS
-        numbers_sizer = wx.FlexGridSizer(0, 2, 3, 3)
-        numbers_sizer.AddGrowableCol(1)
+	numbers_sizer = wx.FlexGridSizer(0, 2, 3, 3)
+	numbers_sizer.AddGrowableCol(1)
         
-        label = wx.StaticText(panel, label="Battery Voltage");
-        self.voltage = wx.TextCtrl(panel, style=wx.TE_READONLY);
-        numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
-        numbers_sizer.Add(self.voltage, flag=wx.EXPAND)
+	label = wx.StaticText(panel, label="Battery Voltage");
+	self.voltage = wx.TextCtrl(panel, style=wx.TE_READONLY);
+	numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+	numbers_sizer.Add(self.voltage, flag=wx.EXPAND)
         
-        label = wx.StaticText(panel, label="Coolant Temp");
-        self.coolant_temp = wx.TextCtrl(panel, style=wx.TE_READONLY);
-        numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
-        numbers_sizer.Add(self.coolant_temp, flag=wx.EXPAND)
+	label = wx.StaticText(panel, label="Coolant Temp");
+	self.coolant_temp = wx.TextCtrl(panel, style=wx.TE_READONLY);
+	numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+	numbers_sizer.Add(self.coolant_temp, flag=wx.EXPAND)
+		
+	label = wx.StaticText(panel, label="Oil Temp");
+	self.oil_temp = wx.TextCtrl(panel, style=wx.TE_READONLY);
+	numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+	numbers_sizer.Add(self.oil_temp, flag=wx.EXPAND)
         
+	label = wx.StaticText(panel, label="Manifold Pressure");
+	self.manifold_pres = wx.TextCtrl(panel, style=wx.TE_READONLY);
+	numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+	numbers_sizer.Add(self.manifold_pres, flag=wx.EXPAND)
+		
+	label = wx.StaticText(panel, label="X-acceleration");
+	self.accel_x = wx.TextCtrl(panel, style=wx.TE_READONLY);
+	numbers_sizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+	numbers_sizer.Add(self.accel_x, flag=wx.EXPAND)
+		
         data_sizer.Add(numbers_sizer, proportion=0.5, flag=wx.EXPAND, border=3)
         
         # Graphs on RHS
@@ -87,17 +102,20 @@ class TelemetryWindow(wx.Frame):
         r = [np.linalg.norm(x) for x in self.accel]
         theta = [np.arctan2(x[1], x[0]) for x in self.accel]
         
-        ax.plot(theta, r, color='#cc0000', lw=10)          
+        ax.plot(theta, r, color='#cc0000', lw=5)          
         #ax.plot(np.linspace(-np.pi, np.pi), np.ones(50))
-        ax.set_rmax(3.0)
+        ax.set_rmax(5.0)
         self.g_canvas.draw()
     
     def process_message(self, message):
-        self.telemetry = message;
-        self.accel.append(np.array([self.telemetry.accel_x, self.telemetry.accel_y]))
-        self.rpm.append(self.telemetry.rpm)
-        self.voltage.SetValue("{:3.1f}".format(self.telemetry.voltage))
-        self.coolant_temp.SetValue("{:3.1f}C".format(self.telemetry.coolant_temp))
+		self.telemetry = message;
+		self.accel.append(np.array([self.telemetry.accel_x, self.telemetry.accel_y]))
+		self.rpm.append(self.telemetry.rpm)
+		self.voltage.SetValue("{:3.1f} V".format(self.telemetry.voltage))
+		self.coolant_temp.SetValue("{:3.1f} C".format(self.telemetry.coolant_temp))
+		self.oil_temp.SetValue("{:3.1f} C".format(self.telemetry.oil_temp))
+		self.manifold_pres.SetValue("{:3.1f} MPa".format(self.telemetry.manifold_pres))
+		self.accel_x.SetValue("{:3.1f} g".format(self.telemetry.accel_x))
         #print message
     
     def update_data(self, event=None):

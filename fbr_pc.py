@@ -4,10 +4,11 @@ wxreactor.install()
 import sys
 from net import ProtobufProtocol
 from twisted.internet import reactor
+from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import clientFromString
 from gui import TelemetryWindow
-from protobuf.fbr_pb2 import network_message
+from protobuf.fbr_pb2 import telemetry_message
 import wx
 import numpy as np
 
@@ -33,18 +34,17 @@ frame = TelemetryWindow(None)
 frame.Show(True)
 reactor.registerWxApp(app)
 
-#endpoint = clientFromString(reactor, sys.argv[1])           UNCOMMENT!!!
-#endpoint.connect(TelemetryProtocolFactory(frame))			 UNCOMMENT!!!		
+endpoint = clientFromString(reactor, sys.argv[1])           
+endpoint.connect(TelemetryProtocolFactory(frame))			 		
 
-#endpoint = TCP4ServerEndpoint(reactor, 8282)
-#endpoint.listen(TelemetryProtocolFactory(frame))
+endpoint = TCP4ServerEndpoint(reactor, 8282)
+endpoint.listen(TelemetryProtocolFactory(frame))
 
-#for i in np.linspace(-np.pi, np.pi):
-#    message = network_message()
-#    
-#    message.telemetry.accel_x = np.cos(i)
-#    message.telemetry.accel_y = np.sin(i)
-#    
-#    frame.process_message(message)
+for i in np.linspace(-np.pi, np.pi):
+   message = telemetry_message()
+   message.accel_x = np.cos(i)
+   message.accel_y = np.sin(i)
+    
+frame.process_message(message)
 
 reactor.run()
